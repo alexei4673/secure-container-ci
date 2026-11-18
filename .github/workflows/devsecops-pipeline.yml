@@ -1,19 +1,23 @@
 name: Security Pipeline
 
-on: [push]
+on:
+  push:
+  pull_request:
 
 jobs:
   security-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Secret Scan (TruffleHog)
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.before }}
-          head: ${{ github.sha }}
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Python SAST (Bandit)
         run: |
